@@ -1,6 +1,4 @@
-//import * as Const from './constants';
 var Const = require('./constants');
-
 
 class NodeWriter {
   constructor(knex) {
@@ -32,7 +30,6 @@ class NodeWriter {
     if (!params.node_type) {
       throw(`node_type not given for ${params.name}`)
     }
-    //console.info("WRITING: " + JSON.stringify(params, null, 2));
     return this.knex(Const.NODES_TABLE).insert(objectToInsert, 'id')
     .then(result => {
       const id = result[0]
@@ -102,33 +99,75 @@ class NodeWriter {
       })
   }
 
-  insertFakeNodeHistory(params) {
-  //  return knex.raw("insert into nodes_history values(1407, 1401, 'Changed Name', 'document', '2017-10-10', '[2017-10-10,2017-11-13)')")
+  insertNodeHistory(params) {
+    if (!params.id)
+      throw "No id"
+    if (!params.parent_id)
+      params['parent_id'] = null
     return this.knex(Const.NODES_HISTORY_TABLE).insert({
           id: params.id,
           parent_id: params.parent_id,
           name: params.name,
-          created_at: params.created_at,
-          period: params.period,
+          created_at: params.started_at,
+          period: `[${params.started_at},${params.ended_at})`,
           node_type: params.node_type})
-    .then(result => {
-      return(Promise.resolve(params))
-    })
-  }
-
-  insertNodeRecord(params) {
-    return this.knex(Const.NODES_TABLE).insert({
-          parent_id: params.parent_id,
-          name: params.name,
-          created_at: params.created_at,
-          period: params.period,
-          node_type: params.node_type}, 'id')
     .then(result => {
       params['id'] = result[0]
       return(Promise.resolve(params))
     })
-
   }
+
+  insertNode(params) {
+    if (!params.parent_id)
+      params['parent_id'] = null
+    return this.knex.insert({
+          parent_id: params.parent_id,
+          name: params.name,
+          created_at: params.started_at,
+          period: `[${params.started_at},)`,
+          node_type: params.node_type}, 'id')
+          .into(Const.NODES_TABLE)
+    .then(result => {
+      params['id'] = result[0]
+      return(Promise.resolve(params))
+    })
+  }
+
+  insertNodePreceding(newerNode, olderNode) {
+    olderNode['id'] = newerNode.id,
+    olderNode['ended_at'] = newerNode.started_at
+    return this.insertNodeHistory(olderNode)
+  }
+
+  addTagToNode(node, tag, started_date) {
+    var objectToInsert = {
+      node_id: node.id,
+      tag_id: tag.id,
+      created_at: started_date,
+      period: `[${started_date},)`
+    }
+    return this.knex.insert(objectToInsert, 'id').table(Const.NODES_TAGS_TABLE)
+    .then(results => {
+      objectToInsert['id'] = results[0]
+      return objectToInsert
+    })
+  }
+
+  addTagToNodePreceding(previousNodeTag, node, tag, started_at) {
+    var objectToInsert = {
+      id: previousNodeTag.id,
+      node_id: node.id,
+      tag_id: tag.id,
+      created_at: started_at,
+      period: `[${started_at},${previousNodeTag.created_at})`
+    }
+    return this.knex.insert(objectToInsert, 'id').table(Const.NODES_TAGS_HISTORY_TABLE)
+    .then(results => {
+      objectToInsert['id'] = results[0]
+      return objectToInsert
+    })
+  }
+
 
 }
 module.exports = NodeWriter;

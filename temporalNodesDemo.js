@@ -35,35 +35,6 @@ function indentString(level) {
 }
 
 
-// function fillNodeChildren(node) {
-//   console.info(`fillNodeChildren for: ${node.id}`)
-//   return knex.select(['id', 'node_type', 'name', 'parent_id'])
-//     .where('parent_id', node.id).table(Const.NODES_TABLE)
-//     .then((childNodes) => {
-//        console.info(`Node: ${node.id} - Child count: ${childNodes.length}`)
-//        if (childNodes.length == 0) {
-//          nodeJson = {name: node.name,
-//               id: node.id,
-//               parent_id: node.parent_id,
-//               node_type: node.node_type,
-//               children: []}
-//          return Promise.resolve(nodeJson)
-//        } else {
-//          return findChildren(childNodes)
-//          .then(children => {
-//            nodeJson = {
-//               name: node.name, id: node.id,
-//               parent_id: node.parent_id,
-//               node_type: node.node_type,
-//               children: children}
-//            return Promise.resolve(nodeJson)
-//          })
-//        }
-//    })
-// }
-
-
-
 nodeWriter.createNode().then((nodeId) => {
   console.info(`Created node: ${nodeId}`)
   var nodeTree = new NodeTree(knex, nodeId)

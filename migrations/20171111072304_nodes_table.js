@@ -25,7 +25,7 @@ exports.up = function(knex, Promise) {
             name        text,
             node_type text NOT NULL CHECK (node_type IN ('document', 'section', 'entry')),
             created_at timestamptz NOT NULL DEFAULT current_timestamp,
-            period tstzrange NOT NULL
+            period tstzrange NOT NULL DEFAULT tstzrange(current_timestamp, null)
           );
 
        CREATE UNIQUE INDEX nodes_primary on nodes (id);
@@ -37,20 +37,22 @@ exports.up = function(knex, Promise) {
           UNION ALL
             SELECT * FROM nodes_history;
 
-        CREATE EXTENSION IF NOT EXISTS temporal_tables;
-
-        ALTER TABLE nodes ALTER period SET DEFAULT tstzrange(current_timestamp, null);
-
         CREATE TABLE tags
           (
             id SERIAL PRIMARY KEY,
-            name        text,
+            name        text NOT NULL,
+            category    text NOT NULL,
             created_at timestamptz NOT NULL DEFAULT current_timestamp,
             period tstzrange NOT NULL DEFAULT tstzrange(current_timestamp, null)
           );
         CREATE UNIQUE INDEX tags_primary on tags (id);
         CREATE UNIQUE INDEX tags_name on tags (name);
-        CREATE TABLE tags_history (LIKE nodes);
+        CREATE TABLE tags_history (LIKE tags);
+        CREATE VIEW tags_with_history AS
+             SELECT * FROM tags
+           UNION ALL
+             SELECT * FROM tags_history;
+
 
         CREATE TABLE nodes_tags
           (
@@ -61,14 +63,12 @@ exports.up = function(knex, Promise) {
             period tstzrange NOT NULL DEFAULT tstzrange(current_timestamp, null)
           );
         CREATE UNIQUE INDEX nodes_tags_primary on nodes_tags (id);
-        CREATE TABLE nodes_tags_history (LIKE nodes);
-      `
-      // CREATE TRIGGER versioning_trigger
-      //    BEFORE INSERT OR UPDATE OR DELETE ON nodes_tags
-      //    FOR EACH ROW EXECUTE PROCEDURE versioning(
-      //      'period', 'nodes_tags_history', true
-      //    );
-
+        CREATE TABLE nodes_tags_history (LIKE nodes_tags);
+        CREATE VIEW nodes_tags_with_history AS
+             SELECT * FROM nodes_tags
+           UNION ALL
+             SELECT * FROM nodes_tags_history;
+        `
     ),
     knex.schema.raw(createTriggerForTable('nodes')),
     knex.schema.raw(createTriggerForTable('tags')),
@@ -79,11 +79,11 @@ exports.up = function(knex, Promise) {
 
 exports.down = function(knex, Promise) {
   return Promise.all([
-    knex.schema.dropTable('nodes'),
-    knex.schema.dropTable('nodes_history'),
-    knex.schema.dropTable('tags'),
-    knex.schema.dropTable('tags_history'),
-    knex.schema.dropTable('nodes_tags'),
-    knex.schema.dropTable('nodes_tags_history')
+    knex.schema.raw('drop table nodes cascade'),
+    knex.schema.raw('drop table nodes_history cascade'),
+    knex.schema.raw('drop table tags cascade'),
+    knex.schema.raw('drop table tags_history cascade'),
+    knex.schema.raw('drop table nodes_tags cascade'),
+    knex.schema.raw('drop table nodes_tags_history cascade')
   ])
 };
