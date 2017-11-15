@@ -1,18 +1,19 @@
 {
-  "name": "temporal_test",
+  "name": "ombud-data-2",
   "version": "1.0.0",
-  "description": "Test a content branch with versioning",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Jonathan Griggs <jonathan.griggs@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "bookshelf": "^0.10.4",
-    "bookshelf-uuid": "^1.0.0",
-    "knex": "^0.14.0",
-    "pg": "^7.4.0",
-    "sinon": "^4.1.2"
+    "elasticsearch": "13.3.1",
+    "knex": "0.13.0",
+    "lodash": "4.17.4",
+    "pg": "7.3.0",
+    "prolly": "0.3.0",
+    "sql-loader": "1.0.3"
   }
 }

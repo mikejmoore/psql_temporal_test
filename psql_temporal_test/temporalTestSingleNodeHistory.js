@@ -6,7 +6,7 @@ const triggerUtils = require('./database_support/triggerUtils')
 nodeWriter = new NodeWriter(knex)
 
 async function main() {
-  triggerUtils.removeTriggers(knex)
+  await triggerUtils.removeTriggers(knex)
   let latestTopNode = await nodeWriter.insertNode(
       { name: 'My Great Document',
         node_type: 'document',
@@ -18,7 +18,7 @@ async function main() {
         node_type: 'document',
         started_at: '2016-01-01'
       })
-  triggerUtils.applyTriggers(knex)
+  await triggerUtils.applyTriggers(knex)
 
   var snapshotDate = '2017-06-01'
   var tree = new NodeTree(knex, latestTopNode.id, '2017-06-01')
