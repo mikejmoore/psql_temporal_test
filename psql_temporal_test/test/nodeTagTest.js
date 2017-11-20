@@ -10,9 +10,17 @@ nodeWriter = new NodeWriter(knex)
 const tagWriter = new TagWriter(knex)
 
 describe('NodeTags', async () => {
+  beforeEach(function(done){
+    triggerUtils.removeTriggers(knex)
+    done()
+  });
+
+  afterEach(function(done){
+    triggerUtils.applyTriggers(knex)
+    done()
+  });
 
   it('Should allow knowing the tags on a node at specific times', async () => {
-    await triggerUtils.removeTriggers(knex)
     let tagCritical = await tagWriter.findOrCreateTag({category: 'Importance', name: 'Critical', started_at: '2000-01-01'})
     let tagImportant = await tagWriter.findOrCreateTag({category: 'Importance', name: 'Important', started_at: '2000-01-01'})
     let tagAverage = await tagWriter.findOrCreateTag({category: 'Importance', name: 'Average Importance', started_at: '2000-01-01'})
@@ -33,8 +41,6 @@ describe('NodeTags', async () => {
 
     var nodeTag = await nodeWriter.addTagToNode(latestTopNode, tagFeature, '2017-06-01')
     await nodeWriter.addTagToNodePreceding(nodeTag, latestTopNode, tagBug, '2017-01-01')
-
-    await triggerUtils.applyTriggers(knex)
 
     console.info("Check for latest tags (Critical, Feature) for recent date")
     var tree = new NodeTree(knex, latestTopNode.id, '2017-08-01')

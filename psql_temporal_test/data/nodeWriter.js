@@ -47,7 +47,7 @@ class NodeWriter {
     })
   }
 
-  createNode() {
+  createFakeDataNode() {
     let promises = []
     let children = [
       {name: `Section 1`,
