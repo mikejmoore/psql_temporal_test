@@ -21,7 +21,6 @@ describe('NodeTags', async () => {
     let tagFeature = await tagWriter.findOrCreateTag({category: 'type', name: 'Feature', started_at: '2000-01-01'})
     let tagBug = await tagWriter.findOrCreateTag({category: 'type', name: 'Bug', started_at: '2000-01-01'})
 
-
     console.info("Creating top node (current time)")
     let latestTopNode = await nodeWriter.insertNode(
         { name: 'My Great Document',

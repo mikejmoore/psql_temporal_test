@@ -49,15 +49,10 @@ nodeWriter.createNode().then((nodeId) => {
   node['period'] = '[2010-01-01, 2015-01-01)'
   node['created_at'] = '2010-01-01'
   node['name'] = 'Old Name'
-  return nodeWriter.insertFakeNodeHistory(node)
+  return nodeWriter.insertNodeHistory(node)
 }).then((node) => {
   var nodeDate = new NodeDate(knex)
   return nodeDate.findNodeOnDate(node.id, '2011-01-01')
 }).then((historicalNode) => {
   console.info(`The name of the node was: ${historicalNode.name}`)
 })
-
-
-
-//  This works in PSQL
-//  update nodes_history set period='[2017-9-11,2017-11-11 22:39:20)' where name='Document 1';
